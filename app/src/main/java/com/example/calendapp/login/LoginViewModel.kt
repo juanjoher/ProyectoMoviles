@@ -15,7 +15,11 @@ class LoginViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val _loginState = MutableStateFlow(LoginState())
     val loginState: StateFlow<LoginState> = _loginState
-
+    // Variables para almacenar las credenciales del usuario actual
+    companion object {
+        var currentUserEmail: String = ""
+        var currentUserPassword: String = ""
+    }
     fun onEmailChanged(newEmail: String) {
         _loginState.value = _loginState.value.copy(email = newEmail)
     }
@@ -43,6 +47,10 @@ class LoginViewModel : ViewModel() {
                     )
                     return@launch
                 }
+                // Guardar las credenciales del usuario actual
+                currentUserEmail = email
+                currentUserPassword = password
+                Log.d("LoginViewModel", "Credenciales guardadas para el usuario: $email")
 
                 Log.d("LoginViewModel", "Intentando iniciar sesión con email: $email")
                 val result = auth.signInWithEmailAndPassword(email, password).await()
@@ -58,10 +66,10 @@ class LoginViewModel : ViewModel() {
                     Log.d("LoginViewModel", "Datos obtenidos - Nombre: $nombre, Rol: $rol, Cédula: $cedula")
                     
                     if (rol.isEmpty()) {
-                        Log.e("LoginViewModel", "Error: Rol de usuario no encontrado")
+                        Log.e("LoginViewModel", "Error: usuario no encontrado")
                         _loginState.value = _loginState.value.copy(
                             isLoading = false,
-                            error = "Error: Rol de usuario no encontrado"
+                            error = "Error: usuario no encontrado"
                         )
                         return@launch
                     }
